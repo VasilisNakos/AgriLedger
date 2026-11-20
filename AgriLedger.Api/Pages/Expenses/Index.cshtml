@@ -1,0 +1,99 @@
+@page "/expenses"
+@model AgriLedger.Api.Pages.Expenses.IndexModel
+
+<h1>Έξοδα</h1>
+<p class="lede">Σύνολο @UiText.MonthName(Model.Month) @Model.Year: @UiText.Money(Model.MonthTotal)</p>
+<partial name="_MonthFilter" model="Model" />
+
+<section class="panel">
+    <h2>@(Model.EditId is null ? "Νέα καταχώρηση" : "Διόρθωση")</h2>
+    @if (!string.IsNullOrEmpty(Model.FormError))
+    {
+        <p class="error">@Model.FormError</p>
+    }
+    <div asp-validation-summary="ModelOnly" class="error"></div>
+    <form method="post" asp-page-handler="@(Model.EditId is null ? "Create" : "Update")">
+        <input type="hidden" asp-for="Year" />
+        <input type="hidden" asp-for="Month" />
+        <input type="hidden" asp-for="EditId" />
+        <div class="form-grid">
+            <label>
+                Ημερομηνία
+                <input asp-for="Input.Date" type="date" required />
+            </label>
+            <label>
+                Ποσό (€)
+                <input asp-for="Input.Amount" type="number" min="0.01" step="0.01" required />
+            </label>
+            <label>
+                Κατηγορία
+                <select asp-for="Input.CategoryId" required>
+                    <option value="">Επιλογή</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id">@category.Name@(category.IsActive ? "" : " (ανενεργή)")</option>
+                    }
+                </select>
+            </label>
+            <label>
+                Προμηθευτής
+                <input asp-for="Input.Supplier" maxlength="200" />
+            </label>
+            <label>
+                Περιγραφή
+                <input asp-for="Input.Description" maxlength="500" />
+            </label>
+            <label>
+                Αριθμός παραστατικού
+                <input asp-for="Input.DocumentNumber" maxlength="100" />
+            </label>
+        </div>
+        <div class="actions">
+            <button type="submit">@(Model.EditId is null ? "Καταχώρηση" : "Αποθήκευση")</button>
+            @if (Model.EditId is not null)
+            {
+                <a class="button secondary" href="/expenses?year=@Model.Year&month=@Model.Month">Ακύρωση</a>
+            }
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Κατηγορία</th>
+                    <th>Προμηθευτής</th>
+                    <th>Περιγραφή</th>
+                    <th>Παραστατικό</th>
+                    <th class="num">Ποσό</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@item.CategoryName</td>
+                        <td>@item.Supplier</td>
+                        <td>@item.Description</td>
+                        <td>@item.DocumentNumber</td>
+                        <td class="num">@UiText.Money(item.Amount)</td>
+                        <td class="row-actions">
+                            <a href="/expenses?year=@Model.Year&month=@Model.Month&editId=@item.Id">Διόρθωση</a>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Να διαγραφεί το έξοδο;')">
+                                <input type="hidden" asp-for="Year" />
+                                <input type="hidden" asp-for="Month" />
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="danger" type="submit">Διαγραφή</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

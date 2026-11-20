@@ -1,0 +1,124 @@
+@page "/sales"
+@model AgriLedger.Api.Pages.Sales.IndexModel
+
+<h1>Πωλήσεις</h1>
+<p class="lede">
+    @UiText.MonthName(Model.Month) @Model.Year:
+    @Model.MonthCases θήκες · @UiText.Money(Model.MonthTotal)
+</p>
+<partial name="_MonthFilter" model="Model" />
+
+<section class="panel">
+    <h2>@(Model.EditId is null ? "Νέα πώληση" : "Διόρθωση")</h2>
+    @if (!string.IsNullOrEmpty(Model.FormError))
+    {
+        <p class="error">@Model.FormError</p>
+    }
+    <div asp-validation-summary="ModelOnly" class="error"></div>
+    <form method="post" asp-page-handler="@(Model.EditId is null ? "Create" : "Update")">
+        <input type="hidden" asp-for="Year" />
+        <input type="hidden" asp-for="Month" />
+        <input type="hidden" asp-for="EditId" />
+        <div class="form-grid">
+            <label>
+                Ημερομηνία
+                <input asp-for="Input.Date" type="date" required />
+            </label>
+            <label>
+                Πελάτης
+                <input asp-for="Input.CustomerName" maxlength="200" required />
+            </label>
+            <label>
+                Τύπος
+                <select asp-for="Input.SaleType">
+                    <option value="Wholesale">Χονδρική</option>
+                    <option value="Retail">Λιανική</option>
+                </select>
+            </label>
+            <label>
+                Μέγεθος
+                <select asp-for="Input.EggSize">
+                    <option value="Small">Μικρά</option>
+                    <option value="Medium">Μεσαία</option>
+                    <option value="Large">Μεγάλα</option>
+                    <option value="XL">Πολύ μεγάλα</option>
+                </select>
+            </label>
+            <label>
+                Θήκες (×30 αυγά)
+                <input asp-for="Input.CaseQuantity" type="number" min="1" step="1" required />
+            </label>
+            <label>
+                Τιμή ανά θήκη (€)
+                <input asp-for="Input.PricePerCase" type="number" min="0" step="0.01" required />
+            </label>
+            <label>
+                Πληρωμή
+                <select asp-for="Input.PaymentStatus">
+                    <option value="Paid">Πληρωμένη</option>
+                    <option value="Pending">Εκκρεμεί</option>
+                </select>
+            </label>
+        </div>
+        <p class="lede">Το συνολικό ποσό το υπολογίζει το σύστημα: θήκες × τιμή.</p>
+        <div class="actions">
+            <button type="submit">@(Model.EditId is null ? "Καταχώρηση" : "Αποθήκευση")</button>
+            @if (Model.EditId is not null)
+            {
+                <a class="button secondary" href="/sales?year=@Model.Year&month=@Model.Month">Ακύρωση</a>
+            }
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Πελάτης</th>
+                    <th>Τύπος</th>
+                    <th>Μέγεθος</th>
+                    <th class="num">Θήκες</th>
+                    <th class="num">Τιμή</th>
+                    <th class="num">Σύνολο</th>
+                    <th>Πληρωμή</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    var nextStatus = item.PaymentStatus == PaymentStatus.Paid ? PaymentStatus.Pending : PaymentStatus.Paid;
+                    <tr>
+                        <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@item.CustomerName</td>
+                        <td>@UiText.SaleTypeName(item.SaleType)</td>
+                        <td>@UiText.EggSizeName(item.EggSize)</td>
+                        <td class="num">@item.CaseQuantity</td>
+                        <td class="num">@UiText.Money(item.PricePerCase)</td>
+                        <td class="num">@UiText.Money(item.TotalAmount)</td>
+                        <td class="@(item.PaymentStatus == PaymentStatus.Pending ? "pending" : null)">@UiText.PaymentName(item.PaymentStatus)</td>
+                        <td class="row-actions">
+                            <a href="/sales?year=@Model.Year&month=@Model.Month&editId=@item.Id">Διόρθωση</a>
+                            <form method="post" asp-page-handler="Payment">
+                                <input type="hidden" asp-for="Year" />
+                                <input type="hidden" asp-for="Month" />
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="@nextStatus" />
+                                <button class="secondary" type="submit">@(nextStatus == PaymentStatus.Paid ? "Είσπραξη" : "Εκκρεμεί")</button>
+                            </form>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Να διαγραφεί η πώληση;')">
+                                <input type="hidden" asp-for="Year" />
+                                <input type="hidden" asp-for="Month" />
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="danger" type="submit">Διαγραφή</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

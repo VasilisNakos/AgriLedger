@@ -1,0 +1,78 @@
+@page "/production"
+@model AgriLedger.Api.Pages.Production.IndexModel
+
+<h1>Παραγωγή</h1>
+<p class="lede">
+    Θήκες που παράχθηκαν, @UiText.MonthName(Model.Month) @Model.Year: @Model.MonthCases.
+    Το κόστος ανά θήκη βγαίνει από τα έξοδα του μήνα διαιρεμένα με αυτό το σύνολο, όχι με τις θήκες που πουλήθηκαν.
+</p>
+<partial name="_MonthFilter" model="Model" />
+
+<section class="panel">
+    <h2>@(Model.EditId is null ? "Νέα παραγωγή" : "Διόρθωση")</h2>
+    @if (!string.IsNullOrEmpty(Model.FormError))
+    {
+        <p class="error">@Model.FormError</p>
+    }
+    <div asp-validation-summary="ModelOnly" class="error"></div>
+    <form method="post" asp-page-handler="@(Model.EditId is null ? "Create" : "Update")">
+        <input type="hidden" asp-for="Year" />
+        <input type="hidden" asp-for="Month" />
+        <input type="hidden" asp-for="EditId" />
+        <div class="form-grid">
+            <label>
+                Ημερομηνία
+                <input asp-for="Input.Date" type="date" required />
+            </label>
+            <label>
+                Θήκες που παράχθηκαν (×30 αυγά)
+                <input asp-for="Input.CaseQuantity" type="number" min="1" step="1" required />
+            </label>
+            <label>
+                Σημειώσεις
+                <input asp-for="Input.Notes" maxlength="500" />
+            </label>
+        </div>
+        <div class="actions">
+            <button type="submit">@(Model.EditId is null ? "Καταχώρηση" : "Αποθήκευση")</button>
+            @if (Model.EditId is not null)
+            {
+                <a class="button secondary" href="/production?year=@Model.Year&month=@Model.Month">Ακύρωση</a>
+            }
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th class="num">Θήκες</th>
+                    <th>Σημειώσεις</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                        <td class="num">@item.CaseQuantity</td>
+                        <td>@item.Notes</td>
+                        <td class="row-actions">
+                            <a href="/production?year=@Model.Year&month=@Model.Month&editId=@item.Id">Διόρθωση</a>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Να διαγραφεί η παραγωγή;')">
+                                <input type="hidden" asp-for="Year" />
+                                <input type="hidden" asp-for="Month" />
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="danger" type="submit">Διαγραφή</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

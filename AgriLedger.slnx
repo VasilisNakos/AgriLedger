@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AgriLedger.Api.Tests/AgriLedger.Api.Tests.csproj" />
+  <Project Path="AgriLedger.Api/AgriLedger.Api.csproj" />
+</Solution>

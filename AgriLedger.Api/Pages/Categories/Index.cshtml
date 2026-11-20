@@ -1,0 +1,76 @@
+@page "/categories"
+@model AgriLedger.Api.Pages.Categories.IndexModel
+
+<h1>Κατηγορίες εξόδων</h1>
+<p class="lede">Οι αρχικές κατηγορίες είναι ήδη μέσα. Νέα κατηγορία προστίθεται από εδώ, χωρίς αλλαγή κώδικα.</p>
+
+<section class="panel">
+    <h2>@(Model.EditId is null ? "Νέα κατηγορία" : "Διόρθωση")</h2>
+    @if (!string.IsNullOrEmpty(Model.FormError))
+    {
+        <p class="error">@Model.FormError</p>
+    }
+    <div asp-validation-summary="ModelOnly" class="error"></div>
+    <form method="post" asp-page-handler="@(Model.EditId is null ? "Create" : "Update")">
+        <input type="hidden" asp-for="EditId" />
+        <div class="form-grid">
+            <label>
+                Κωδικός
+                <input asp-for="Input.Code" maxlength="32" required />
+            </label>
+            <label>
+                Όνομα
+                <input asp-for="Input.Name" maxlength="100" required />
+            </label>
+            <label>
+                Σειρά
+                <input asp-for="Input.SortOrder" type="number" min="0" max="10000" />
+            </label>
+            <label class="check">
+                <input asp-for="Input.IsActive" />
+                Ενεργή
+            </label>
+        </div>
+        <div class="actions">
+            <button type="submit">@(Model.EditId is null ? "Προσθήκη" : "Αποθήκευση")</button>
+            @if (Model.EditId is not null)
+            {
+                <a class="button secondary" href="/categories">Ακύρωση</a>
+            }
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Κωδικός</th>
+                    <th>Όνομα</th>
+                    <th class="num">Σειρά</th>
+                    <th>Κατάσταση</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Code</td>
+                        <td>@item.Name</td>
+                        <td class="num">@item.SortOrder</td>
+                        <td>@(item.IsActive ? "Ενεργή" : "Ανενεργή")</td>
+                        <td class="row-actions">
+                            <a href="/categories?editId=@item.Id">Διόρθωση</a>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Να διαγραφεί η κατηγορία;')">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="danger" type="submit">Διαγραφή</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

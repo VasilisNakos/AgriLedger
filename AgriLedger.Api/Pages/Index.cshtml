@@ -1,0 +1,78 @@
+@page "/"
+@model IndexModel
+@{
+    var report = Model.Report;
+    var marginClass = report.ProfitMarginPercent is < 0 ? "negative" : "positive";
+    var profitClass = report.NetProfit < 0 ? "negative" : "positive";
+}
+
+<h1>Μηνιαία ανάλυση</h1>
+<p class="lede">Έσοδα, έξοδα και κόστος παραγωγής για @UiText.MonthName(Model.Month) @Model.Year.</p>
+<partial name="_MonthFilter" model="Model" />
+
+<section class="cards">
+    <article class="card">
+        <span>Συνολικά έσοδα</span>
+        <p class="figure">@UiText.Money(report.TotalRevenue)</p>
+        <small>Πληρωμένα @UiText.Money(report.PaidRevenue) · Εκκρεμή @UiText.Money(report.PendingRevenue)</small>
+    </article>
+    <article class="card">
+        <span>Συνολικά έξοδα</span>
+        <p class="figure">@UiText.Money(report.TotalExpenses)</p>
+    </article>
+    <article class="card">
+        <span>Καθαρό αποτέλεσμα</span>
+        <p class="figure @profitClass">@UiText.Money(report.NetProfit)</p>
+        <small class="@marginClass">
+            Περιθώριο:
+            @(report.ProfitMarginPercent is decimal margin ? UiText.Percent(margin) : "—")
+        </small>
+    </article>
+    <article class="card">
+        <span>Θήκες που παράχθηκαν</span>
+        <p class="figure">@report.TotalCasesProduced</p>
+        <small>@(report.TotalCasesProduced * AgriLedger.Api.Models.Sale.EggsPerCase) αυγά</small>
+    </article>
+    <article class="card">
+        <span>Θήκες που πουλήθηκαν</span>
+        <p class="figure">@report.TotalCasesSold</p>
+        <small>@(report.TotalCasesSold * AgriLedger.Api.Models.Sale.EggsPerCase) αυγά</small>
+    </article>
+    <article class="card">
+        <span>Κόστος παραγωγής ανά θήκη</span>
+        <p class="figure">@(report.CostPerCase is decimal cost ? UiText.Cost(cost) : "—")</p>
+        <small>Έξοδα μήνα / θήκες που παράχθηκαν</small>
+    </article>
+</section>
+
+@if (report.TotalCasesProduced == 0)
+{
+    <p class="lede">Δεν υπάρχει καταχωρημένη παραγωγή για αυτόν τον μήνα, οπότε το κόστος ανά θήκη δεν υπολογίζεται. <a href="/production?year=@Model.Year&month=@Model.Month">Καταχώρηση παραγωγής</a></p>
+}
+
+<section class="panel">
+    <h2>Έξοδα ανά κατηγορία</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Κατηγορία</th>
+                    <th class="num">Ποσό</th>
+                    <th class="num">Μερίδιο</th>
+                    <th>Κατανομή</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var share in report.ExpensesByCategory)
+                {
+                    <tr>
+                        <td>@share.Name</td>
+                        <td class="num">@UiText.Money(share.Amount)</td>
+                        <td class="num">@UiText.Percent(share.PercentOfExpenses)</td>
+                        <td><div class="bar"><span style="width:@(share.PercentOfExpenses.ToString(System.Globalization.CultureInfo.InvariantCulture))%"></span></div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

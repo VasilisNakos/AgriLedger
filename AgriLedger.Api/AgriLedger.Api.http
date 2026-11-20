@@ -1,0 +1,49 @@
+@AgriLedger.Api_HostAddress = http://localhost:5116
+
+GET {{AgriLedger.Api_HostAddress}}/api/categories
+Accept: application/json
+
+###
+
+POST {{AgriLedger.Api_HostAddress}}/api/expenses
+Content-Type: application/json
+
+{
+  "amount": 120.50,
+  "date": "2026-11-04",
+  "categoryId": 1,
+  "supplier": "Μύλος",
+  "description": "Ζωοτροφή Νοεμβρίου",
+  "documentNumber": "ΤΔΑ-12"
+}
+
+###
+
+POST {{AgriLedger.Api_HostAddress}}/api/production
+Content-Type: application/json
+
+{
+  "date": "2026-11-03",
+  "caseQuantity": 40,
+  "notes": "Ημερήσια συλλογή"
+}
+
+###
+
+POST {{AgriLedger.Api_HostAddress}}/api/sales
+Content-Type: application/json
+
+{
+  "date": "2026-11-10",
+  "customerName": "Χονδρέμπορος",
+  "saleType": "Wholesale",
+  "eggSize": "Large",
+  "caseQuantity": 10,
+  "pricePerCase": 4.50,
+  "paymentStatus": "Paid"
+}
+
+###
+
+GET {{AgriLedger.Api_HostAddress}}/api/analytics/monthly?year=2026&month=11
+Accept: application/json

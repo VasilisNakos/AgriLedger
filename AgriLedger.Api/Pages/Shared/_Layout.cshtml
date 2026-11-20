@@ -1,0 +1,31 @@
+@{
+    var path = Context.Request.Path.Value ?? "/";
+}
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgriLedger</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">AgriLedger</a>
+        <nav>
+            <a class="@(path == "/" ? "active" : null)" href="/">Ανάλυση</a>
+            <a class="@(path.StartsWith("/production") ? "active" : null)" href="/production">Παραγωγή</a>
+            <a class="@(path.StartsWith("/sales") ? "active" : null)" href="/sales">Πωλήσεις</a>
+            <a class="@(path.StartsWith("/expenses") ? "active" : null)" href="/expenses">Έξοδα</a>
+            <a class="@(path.StartsWith("/categories") ? "active" : null)" href="/categories">Κατηγορίες</a>
+        </nav>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer>
+        Τοπικό βιβλίο πτηνοτροφείου. Τα δεδομένα μένουν στο agriledger.db.
+        <a href="/swagger">API</a>
+    </footer>
+</body>
+</html>

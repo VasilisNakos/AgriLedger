@@ -1,0 +1,24 @@
+@model MonthlyPageModel
+<form method="get" class="filters">
+    <label>
+        Μήνας
+        <select name="month">
+            @for (var month = 1; month <= 12; month++)
+            {
+                if (month == Model.Month)
+                {
+                    <option value="@month" selected>@UiText.MonthName(month)</option>
+                }
+                else
+                {
+                    <option value="@month">@UiText.MonthName(month)</option>
+                }
+            }
+        </select>
+    </label>
+    <label>
+        Έτος
+        <input type="number" name="year" min="2000" max="2100" value="@Model.Year" />
+    </label>
+    <button type="submit">Εμφάνιση</button>
+</form>
